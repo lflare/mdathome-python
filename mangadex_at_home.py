@@ -248,9 +248,10 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
         image_url = f"{app.image_server}/{image_type}/{chapter_hash}/{image_name}"
         image = await download_image(image_url)
 
-        # If upstream return error, return the same
+        # If upstream return error, log and redirect to upstream server
         if type(image) == int:
-            return response.empty(status=image)
+            logger.error(f"Request for {request.ctx.sanitized_url} failed")
+            return response.redirect(image_url)
 
         # Save image into cache
         await set_async(request_hash, image)
