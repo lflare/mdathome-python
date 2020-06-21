@@ -166,9 +166,9 @@ def server_ping_thread(app):
         server_ping(app)
         time.sleep(45)
 
-async def download_image(image_server, image_type, chapter_hash, image_name):
+async def download_image(image_url):
     for attempt in range(3):
-        r = await client.get(f"{image_server}/{image_type}/{chapter_hash}/{image_name}")
+        r = await client.get(image_url)
         if r.status_code == httpx.codes.OK:
             content_length = last_modified = None
             if "Content-Length" in r.headers:
@@ -235,6 +235,7 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
     image = None
     if request_hash in cache:
         logger.info(f"Request for {request.ctx.sanitized_url} hit cache")
+
         # Retrieve image from cache
         image = await get_async(request_hash)
 
@@ -242,8 +243,10 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
         headers["X-Cache"] = "HIT"
     else:
         logger.info(f"Request for {request.ctx.sanitized_url} missed cache")
+
         # Attempt to retrieve image from upstream
-        image = await download_image(app.image_server, image_type, chapter_hash, image_name)
+        image_url = f"{app.image_server}/{image_type}/{chapter_hash}/{image_name}"
+        image = await download_image(image_url)
 
         # If upstream return error, return the same
         if type(image) == int:
