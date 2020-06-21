@@ -18,8 +18,7 @@ import time
 # Load configuration from settings.json
 with open("settings.json") as file:
     configuration = json.loads(file.read())
-THREADS = int(configuration["threads"])
-PING_SLEEP = THREADS * 60
+PING_SLEEP = 45
 
 ## Cache
 GIBIBYTE = 2**30
@@ -281,5 +280,5 @@ if __name__ == "__main__":
     ping_thread.start()
 
     # Run webserver
-    app.run(host="0.0.0.0", port=configuration["client_port"], workers=THREADS,
+    app.run(host="0.0.0.0", port=configuration["client_port"], workers=int(configuration["threads"]),
             access_log=False, ssl={'cert': "./server.crt", 'key': "./server.key"})
