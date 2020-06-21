@@ -18,7 +18,7 @@ import time
 # Load configuration from settings.json
 with open("settings.json") as file:
     configuration = json.loads(file.read())
-THREADS = 16
+THREADS = int(configuration["threads"])
 PING_SLEEP = THREADS * 60
 
 ## Cache
