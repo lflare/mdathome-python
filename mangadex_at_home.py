@@ -82,7 +82,7 @@ async def get_async(key):
 ##
 # Utility Constants
 ##
-app.running = True
+cache.set("running", True)
 app.last_request = time.time()
 app.image_server = "https://s2.mangadex.org"
 app.api_server = "https://api.mangadex.network"
@@ -162,7 +162,7 @@ def server_ping(app):
 
 def server_ping_thread(app):
     time.sleep(45)
-    while app.running:
+    while cache.get("running") == True:
         server_ping(app)
         time.sleep(45)
 
@@ -184,7 +184,7 @@ async def download_image(image_url):
 @app.listener('before_server_stop')
 async def server_stop(app, loop):
     logger.info("Starting graceful shutdown!")
-    app.running = False
+    await set_async("running", False)
     r = await client.post(f"{app.api_server}/stop", json={"secret": get_ping_params(app)["secret"]})
     # Wait till last request is more than 5 seconds old
     time_diff = time.time() - app.last_request
@@ -279,7 +279,6 @@ if __name__ == "__main__":
     ping_thread = threading.Thread(target=server_ping_thread, args=(app,))
     ping_thread.daemon = True
     ping_thread.start()
-    app.ping_thread = ping_thread
 
     # Run webserver
     app.run(host="0.0.0.0", port=configuration["client_port"], workers=THREADS,
