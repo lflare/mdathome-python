@@ -167,19 +167,19 @@ def server_ping_thread(app):
         time.sleep(45)
 
 async def download_image(image_server, image_type, chapter_hash, image_name):
-    r = await client.get(f"{image_server}/{image_type}/{chapter_hash}/{image_name}")
-    if r.status_code == httpx.codes.OK:
-        content_length = last_modified = None
-        if "Content-Length" in r.headers:
-            content_length = r.headers["Content-Length"]
-        if "Last-Modified" in r.headers:
-            last_modified = r.headers["Last-Modified"]
+    for attempt in range(3):
+        r = await client.get(f"{image_server}/{image_type}/{chapter_hash}/{image_name}")
+        if r.status_code == httpx.codes.OK:
+            content_length = last_modified = None
+            if "Content-Length" in r.headers:
+                content_length = r.headers["Content-Length"]
+            if "Last-Modified" in r.headers:
+                last_modified = r.headers["Last-Modified"]
 
-        gc.collect()
-        return r.read(), r.headers['Content-Type'], content_length, last_modified
-    else:
-        gc.collect()
-        return r.status_code
+            gc.collect()
+            return r.read(), r.headers['Content-Type'], content_length, last_modified
+    gc.collect()
+    return r.status_code
 
 @app.listener('before_server_stop')
 async def server_stop(app, loop):
