@@ -96,7 +96,7 @@ async def add_start_time(request):
 async def add_spent_time(request, response):
     if hasattr(request.ctx, "sanitized_url"):
         time_taken = (time.time() - request.ctx.start_time) * 1000
-        logger.info(f"Request for {request.ctx.sanitized_url} completed in {time_taken:.3f}ms")
+        logger.info(f"Request for {request.ctx.sanitized_url} - {request.ctx.referer} completed in {time_taken:.3f}ms")
         response.headers["X-Time-Taken"] = f"{int(time_taken)}"
 
     # Call garbage collector
@@ -207,9 +207,16 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
     if not re.match(r"[a-z0-9]{1,4}\.(jpg|png|gif)", image_name.lower()):
         return response.empty(status=400)
 
+    # Get Referer
+    request.ctx.referer = None
+    if "Referer" in request.headers:
+        match = re.findall("https://mangadex.org/chapter/[0-9]+", request.headers["Referer"])
+        if len(match) == 1:
+            request.ctx.referer = match[0]
+
     # Update last request
     request.ctx.sanitized_url = f"/{image_type}/{chapter_hash}/{image_name}"
-    logger.info(f"Request for {request.ctx.sanitized_url} received")
+    logger.info(f"Request for {request.ctx.sanitized_url} - {request.ctx.referer} received")
     app.last_request = time.time()
 
     # Prepare headers
@@ -225,7 +232,7 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
 
     # Check if If-Modified-Since exists
     if "If-Modified-Since" in request.headers:
-        logger.info(f"Request for {request.ctx.sanitized_url} cached by browser")
+        logger.info(f"Request for {request.ctx.sanitized_url} - {request.ctx.referer} cached by browser")
         return response.empty(status=httpx.codes.not_modified)
 
     # Compute unique image hash
@@ -234,7 +241,7 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
     # Check if inside cache
     image = None
     if request_hash in cache:
-        logger.info(f"Request for {request.ctx.sanitized_url} hit cache")
+        logger.info(f"Request for {request.ctx.sanitized_url} - {request.ctx.referer} hit cache")
 
         # Retrieve image from cache
         image = await get_async(request_hash)
@@ -242,7 +249,7 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
         # Update headers
         headers["X-Cache"] = "HIT"
     else:
-        logger.info(f"Request for {request.ctx.sanitized_url} missed cache")
+        logger.info(f"Request for {request.ctx.sanitized_url} - {request.ctx.referer} missed cache")
 
         # Attempt to retrieve image from upstream
         image_url = f"{app.image_server}/{image_type}/{chapter_hash}/{image_name}"
@@ -250,7 +257,7 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
 
         # If upstream return error, log and redirect to upstream server
         if type(image) == int:
-            logger.error(f"Request for {request.ctx.sanitized_url} failed")
+            logger.error(f"Request for {request.ctx.sanitized_url} - {request.ctx.referer} failed")
             return response.redirect(image_url)
 
         # Save image into cache
