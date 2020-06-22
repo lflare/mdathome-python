@@ -59,7 +59,8 @@ app.config.KEEP_ALIVE_TIMEOUT = 60
 app.tls_created_at = None
 
 # Initialise httpx
-client = httpx.AsyncClient(verify=False)
+limits = httpx.PoolLimits(max_keepalive=None, max_connections=None)
+client = httpx.AsyncClient(verify=False, pool_limits=limits)
 
 ##
 # Cache Async Libraries
