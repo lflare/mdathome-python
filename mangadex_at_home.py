@@ -123,7 +123,7 @@ def get_ping_params(app):
         "port": configuration["client_port"],
         "disk_space": int(configuration["max_reported_size_in_mebibytes"] * 1024 * 1024),
         "network_speed": int(configuration["max_kilobits_per_second"] * 1000 / 8),
-        "build_version": 10,
+        "build_version": 13,
         "tls_created_at": app.tls_created_at
     }
 
@@ -224,7 +224,7 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
         "Access-Control-Allow-Origin": "https://mangadex.org",
         "Access-Control-Expose-Headers": "*",
         "Cache-Control": "public, max-age=1209600",
-        "Server": "Mangadex@Home Node 1.0 (10)",
+        "Server": "Mangadex@Home Node 1.0.0 (13)",
         "Timing-Allow-Origin": "https://mangadex.org",
         "X-Content-Type-Options": "nosniff"
 
