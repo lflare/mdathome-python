@@ -68,14 +68,12 @@ async def set_async(key, val):
     loop = asyncio.get_running_loop()
     future = loop.run_in_executor(None, cache.set, key, val)
     result = await future
-    gc.collect()
     return result
 
 async def get_async(key):
     loop = asyncio.get_running_loop()
     future = loop.run_in_executor(None, cache.get, key)
     result = await future
-    gc.collect()
     return result
 
 ##
@@ -175,9 +173,7 @@ async def download_image(image_url):
             if "Last-Modified" in r.headers:
                 last_modified = r.headers["Last-Modified"]
 
-            gc.collect()
             return r.read(), r.headers['Content-Type'], content_length, last_modified
-    gc.collect()
     return r.status_code
 
 @app.listener('before_server_stop')
@@ -263,9 +259,6 @@ async def handle_request(request, image_type, chapter_hash, image_name, request_
     headers["Content-Length"] = image[2] if image[2] is not None else len(image[0])
     if image[3] is not None: headers["Last-Modified"] = image[3]
     headers["X-Uri"] = request.ctx.sanitized_url
-
-    # Collect garbage
-    gc.collect()
 
     # Return image
     return response.raw(image[0], headers=headers)
