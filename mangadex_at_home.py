@@ -114,6 +114,10 @@ def get_ping_headers():
     }
 
 def get_ping_params(app):
+    # Read settings.json in the event of an updated speed
+    with open("settings.json") as file:
+        configuration = json.loads(file.read())
+
     return {
         "secret": configuration["client_secret"],
         "port": configuration["client_port"],
