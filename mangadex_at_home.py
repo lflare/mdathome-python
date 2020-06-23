@@ -60,7 +60,7 @@ app.tls_created_at = None
 
 # Initialise httpx
 limits = httpx.PoolLimits(max_keepalive=None, max_connections=None)
-client = httpx.AsyncClient(verify=False, pool_limits=limits)
+client = httpx.AsyncClient(verify=False, pool_limits=limits, http2=True)
 
 ##
 # Cache Async Libraries
