@@ -1,3 +1,3 @@
 diskcache
-httpx
+httpx>=0.13
 sanic
