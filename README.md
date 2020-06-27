@@ -1,6 +1,8 @@
 # MangaDex@Home... in Python!
 _An unofficial client-rewrite by @lflare!_
 
+**As of (20/06/27), this implementation has been superseded by the new and sexy Golang implementation at _https://github.com/lflare/mdathome-golang_, and will likely receive less updates.**
+
 ## Disclaimer
 No support will be given with this unofficial rewrite. Feature recommendations are not welcomed, but pull requests with new features are. This fork was created entirely out of goodwill and boredom, and if the creator so decides, will not receive future support at any point in time.
 
